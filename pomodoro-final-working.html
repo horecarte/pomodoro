@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍅 Pomodoro Timer Avanzato</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #1e3a8a;
+            color: #1f2937;
+        }
+        .container { 
+            min-height: 100vh; 
+            padding: 2rem; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .card { 
+            max-width: 900px; 
+            width: 100%;
+            background: white; 
+            border-radius: 24px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 3rem; 
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #f3f4f6;
+        }
+        h1 { 
+            font-size: 2.5rem; 
+            color: #1e3a8a; 
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        h2 { 
+            font-size: 2rem; 
+            color: #1e3a8a; 
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        .subtitle { 
+            color: #6b7280; 
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        .form-group { margin-bottom: 1.75rem; }
+        label { 
+            display: block; 
+            font-size: 0.95rem; 
+            font-weight: 600; 
+            color: #374151; 
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+        input, textarea, select { 
+            width: 100%; 
+            padding: 0.875rem; 
+            border: 2px solid #e5e7eb; 
+            border-radius: 12px; 
+            font-size: 1rem; 
+            font-family: inherit;
+            transition: all 0.2s;
+            background: #ffffff;
+        }
+        input:focus, textarea:focus, select:focus { 
+            outline: none; 
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+        .hint { 
+            font-size: 0.875rem; 
+            color: #9ca3af; 
+            margin-top: 0.5rem;
+        }
+        .task-input-grid { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr 1fr auto; 
+            gap: 0.75rem; 
+            align-items: end; 
+        }
+        .btn { 
+            padding: 0.875rem 1.5rem; 
+            border: none; 
+            border-radius: 12px; 
+            font-size: 1rem; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.2s;
+            letter-spacing: -0.01em;
+        }
+        .btn-primary { 
+            background: #1e3a8a; 
+            color: white; 
+            width: 100%; 
+            padding: 1.25rem;
+            font-size: 1.125rem;
+        }
+        .btn-primary:hover:not(:disabled) { 
+            background: #1e40af;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.3);
+        }
+        .btn-primary:disabled { 
+            background: #e5e7eb; 
+            cursor: not-allowed;
+            color: #9ca3af;
+        }
+        .btn-add { 
+            background: #1e3a8a; 
+            color: white; 
+            height: 46px;
+        }
+        .btn-add:hover {
+            background: #1e40af;
+        }
+        .btn-secondary { 
+            background: #6b7280; 
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .btn-success { 
+            background: #10b981; 
+            color: white;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        .btn-danger { 
+            background: #ef4444; 
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .task-list { margin-top: 1rem; }
+        .task-item { 
+            background: #f9fafb; 
+            border-radius: 12px; 
+            margin-bottom: 0.75rem; 
+            padding: 1.25rem; 
+            border: 2px solid transparent; 
+            transition: all 0.2s;
+        }
+        .task-item:hover { 
+            border-color: #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .task-item.completed { 
+            background: #d1fae5; 
+            border-color: #6ee7b7;
+        }
+        .task-item.completed .task-text { 
+            text-decoration: line-through; 
+            color: #6b7280;
+        }
+        .task-item.active { 
+            border-color: #1e3a8a; 
+            background: #eff6ff;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+        .task-header { 
+            display: flex; 
+            align-items: center; 
+            gap: 1rem; 
+            cursor: pointer;
+        }
+        .task-text { 
+            flex: 1; 
+            font-weight: 500;
+            color: #1f2937;
+        }
+        .task-meta { 
+            display: flex; 
+            gap: 0.75rem; 
+            align-items: center; 
+            font-size: 0.875rem;
+        }
+        .task-pomodoros { 
+            background: #1e3a8a; 
+            color: white; 
+            padding: 0.375rem 0.875rem; 
+            border-radius: 999px; 
+            font-weight: 600;
+            font-size: 0.8125rem;
+        }
+        .task-duration { 
+            background: #6b7280; 
+            color: white; 
+            padding: 0.375rem 0.875rem; 
+            border-radius: 999px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+        }
+        .task-notes { 
+            margin-top: 1rem; 
+            padding-top: 1rem; 
+            border-top: 1px solid #e5e7eb; 
+            display: none;
+        }
+        .task-notes.show { display: block; }
+        .task-notes textarea { 
+            font-size: 0.875rem; 
+            min-height: 70px;
+            background: #f9fafb;
+        }
+        .timer-number { 
+            font-size: 6rem; 
+            font-weight: 700; 
+            text-align: center; 
+            margin: 3rem 0;
+            color: #1e3a8a;
+            letter-spacing: -0.05em;
+            font-variant-numeric: tabular-nums;
+        }
+        .timer-controls { 
+            display: flex; 
+            justify-content: center; 
+            gap: 1.25rem; 
+            margin: 2rem 0;
+        }
+        .btn-timer { 
+            width: 80px; 
+            height: 80px; 
+            border: none; 
+            border-radius: 50%; 
+            font-size: 1.75rem; 
+            cursor: pointer; 
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .btn-play { 
+            background: #1e3a8a; 
+            color: white;
+        }
+        .btn-play:hover { 
+            background: #1e40af;
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.3);
+        }
+        .btn-play.active { 
+            background: #f59e0b;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        .btn-reset { 
+            background: #e5e7eb; 
+            color: #374151;
+        }
+        .btn-reset:hover { 
+            background: #d1d5db;
+            transform: scale(1.05);
+        }
+        .action-buttons { 
+            display: flex; 
+            gap: 0.75rem; 
+            justify-content: center; 
+            flex-wrap: wrap; 
+            margin-top: 1.5rem;
+        }
+        .current-task-display { 
+            background: #eff6ff; 
+            border: 2px solid #1e3a8a; 
+            border-radius: 16px; 
+            padding: 1.75rem; 
+            margin: 2rem 0; 
+            text-align: center;
+        }
+        .current-task-display h3 { 
+            color: #1e3a8a; 
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 1.25rem; 
+            margin-top: 2rem; 
+            padding: 2rem; 
+            background: white; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .stat-box { 
+            text-align: center;
+            padding: 0.75rem;
+        }
+        .stat-number { 
+            font-size: 2.5rem; 
+            font-weight: 700; 
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+        .stat-label { 
+            font-size: 0.875rem; 
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(30, 58, 138, 0.75);
+            backdrop-filter: blur(4px);
+            align-items: center; 
+            justify-content: center; 
+            padding: 2rem; 
+            z-index: 1000;
+        }
+        .modal.show { display: flex; }
+        .modal-content { 
+            background: white; 
+            border-radius: 24px; 
+            padding: 2.5rem; 
+            max-width: 900px; 
+            width: 100%; 
+            max-height: 90vh; 
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .modal-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #f3f4f6;
+        }
+        .modal-close { 
+            background: #f3f4f6; 
+            border: none; 
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem; 
+            cursor: pointer; 
+            color: #6b7280;
+            transition: all 0.2s;
+        }
+        .modal-close:hover { 
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+        .report-section { 
+            margin-bottom: 2.5rem; 
+            padding-bottom: 2rem; 
+            border-bottom: 2px solid #f3f4f6;
+        }
+        .report-section:last-child { border-bottom: none; }
+        .report-section h3 { 
+            color: #1e3a8a; 
+            margin-bottom: 1.25rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .report-task { 
+            background: #f9fafb; 
+            padding: 1.25rem; 
+            border-radius: 12px; 
+            margin-bottom: 1rem;
+            border-left: 4px solid #e5e7eb;
+        }
+        .report-task.completed { 
+            background: #d1fae5;
+            border-left-color: #10b981;
+        }
+        .report-task-title { 
+            font-weight: 600; 
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+        }
+        .report-task-meta { 
+            font-size: 0.875rem; 
+            color: #6b7280; 
+            margin-bottom: 0.5rem;
+        }
+        .report-task-notes { 
+            font-size: 0.875rem; 
+            color: #374151; 
+            font-style: italic; 
+            margin-top: 0.75rem; 
+            padding-left: 1rem; 
+            border-left: 3px solid #d1d5db;
+        }
+        .pomodoro-group { 
+            background: #eff6ff; 
+            border: 2px solid #93c5fd; 
+            border-radius: 16px; 
+            padding: 1.75rem; 
+            margin-bottom: 1.5rem;
+        }
+        .pomodoro-group h4 { 
+            color: #1e3a8a; 
+            margin-bottom: 1.25rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .small-task { 
+            background: white; 
+            padding: 1rem; 
+            border-radius: 10px; 
+            border-left: 4px solid #1e3a8a; 
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        .credits {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #f3f4f6;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+        .credits a {
+            color: #1e3a8a;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .credits a:hover {
+            color: #1e40af;
+        }
+        .hidden { display: none; }
+        @media (max-width: 768px) {
+            .task-input-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .timer-number { font-size: 4rem; }
+            .card { padding: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="setup" class="container">
+        <div class="card">
+            <h1>🍅 Tecnica del Pomodoro Avanzata</h1>
+            <p class="subtitle">Pianifica la tua giornata con precisione</p>
+            
+            <div class="form-group" style="margin-top: 2rem;">
+                <label>📅 Data della sessione</label>
+                <input type="date" id="sessionDate">
+            </div>
+
+            <div class="form-group">
+                <label>🎯 Obiettivo principale di oggi</label>
+                <input type="text" id="goal" placeholder="Es: Completare il report trimestrale">
+            </div>
+
+            <div class="form-group">
+                <label>📝 Aggiungi attività</label>
+                <p class="hint" style="margin-bottom: 0.5rem;">Specifica nome, durata Pomodoro e numero di Pomodori necessari</p>
+                <div class="task-input-grid">
+                    <input type="text" id="taskName" placeholder="Nome attività">
+                    <select id="pomDuration">
+                        <option value="25">25 min</option>
+                        <option value="15">15 min</option>
+                        <option value="45">45 min</option>
+                        <option value="50">50 min</option>
+                    </select>
+                    <input type="number" id="pomCount" placeholder="N° Pom." min="0.5" step="0.5" value="1">
+                    <button class="btn btn-add" onclick="addTask()">+</button>
+                </div>
+                <p class="hint">💡 Per attività piccole (< 1 Pomodoro), usa 0.5 e raggrupperemo più attività insieme</p>
+                <div id="setupTasks" class="task-list"></div>
+            </div>
+
+            <button class="btn btn-primary" id="startBtn" onclick="startSession()" disabled>Inizia la Sessione! 🚀</button>
+            
+            <div class="credits">
+                Sviluppato per <strong>Horecarte</strong> • Powered by <a href="https://claude.ai" target="_blank">Claude AI</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="timer" class="container hidden">
+        <div class="card">
+            <h2 id="sessionTitle">🍅 Sessione in corso</h2>
+            <p class="subtitle" id="sessionDateDisplay"></p>
+            <p class="subtitle" id="currentGoal"></p>
+
+            <div class="current-task-display">
+                <h3>Attività corrente:</h3>
+                <p style="font-size: 1.25rem; font-weight: 600; color: #374151;" id="currentTaskName">-</p>
+            </div>
+
+            <div class="timer-number" id="display">25:00</div>
+            
+            <div class="timer-controls">
+                <button class="btn-timer btn-play" id="play" onclick="toggleTimer()">▶</button>
+                <button class="btn-timer btn-reset" onclick="resetTimer()">↻</button>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="skipTask()">⏭️ Salta Attività</button>
+                <button class="btn btn-success" onclick="showReport()">📊 Genera Report</button>
+                <button class="btn btn-danger" onclick="endSession()">🏁 Termina Sessione</button>
+            </div>
+
+            <div class="form-group" style="margin-top: 2rem;">
+                <label>📋 Le tue attività (clicca per note)</label>
+                <div id="taskList"></div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-number" style="color: #dc2626;" id="pomoDone">0</div>
+                <div class="stat-label">Pomodori Fatti</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" style="color: #3b82f6;" id="pomoTotal">0</div>
+                <div class="stat-label">Pomodori Totali</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" style="color: #10b981;" id="tasksDone">0</div>
+                <div class="stat-label">Task Completati</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" style="color: #f59e0b;" id="progress">0%</div>
+                <div class="stat-label">Progresso</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 Report Giornaliero</h2>
+                <button class="modal-close" onclick="closeReport()">✕</button>
+            </div>
+            <div id="reportContent"></div>
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="exportTXT()">📄 Scarica TXT</button>
+                <button class="btn btn-success" onclick="exportHTML()">🌐 Scarica HTML</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            sessionDate: '',
+            goal: '',
+            tasks: [],
+            currentTaskIndex: 0,
+            currentPomodoroInTask: 0,
+            timeLeft: 1500,
+            isActive: false,
+            totalPomodoros: 0,
+            completedPomodoros: 0,
+            interval: null,
+            timerEndTime: null
+        };
+
+        // Imposta data di oggi
+        document.getElementById('sessionDate').valueAsDate = new Date();
+
+        // Carica stato all'avvio
+        window.addEventListener('load', loadState);
+
+        // Salva prima di chiudere
+        window.addEventListener('beforeunload', saveState);
+
+        // Salva ogni 2 secondi
+        setInterval(() => {
+            if (state.tasks.length > 0) saveState();
+        }, 2000);
+
+        function saveState() {
+            const toSave = {...state, interval: null};
+            localStorage.setItem('pomodoroState', JSON.stringify(toSave));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('pomodoroState');
+            if (!saved) return;
+
+            try {
+                const loaded = JSON.parse(saved);
+                Object.assign(state, loaded);
+
+                if (state.timerEndTime && state.isActive) {
+                    const now = Date.now();
+                    const timeRemaining = Math.floor((state.timerEndTime - now) / 1000);
+                    
+                    if (timeRemaining > 0) {
+                        state.timeLeft = timeRemaining;
+                    } else {
+                        state.timeLeft = 0;
+                        state.isActive = false;
+                        if (state.currentTaskIndex < state.tasks.length) {
+                            const task = state.tasks[state.currentTaskIndex];
+                            task.completedPomodoros++;
+                            state.currentPomodoroInTask++;
+                            state.completedPomodoros++;
+                        }
+                    }
+                }
+
+                if (state.tasks.length > 0 && state.goal) {
+                    document.getElementById('setup').classList.add('hidden');
+                    document.getElementById('timer').classList.remove('hidden');
+                    
+                    const d = new Date(state.sessionDate + 'T00:00:00');
+                    document.getElementById('sessionDateDisplay').textContent = d.toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                    document.getElementById('currentGoal').textContent = '🎯 ' + state.goal;
+                    
+                    if (state.currentTaskIndex < state.tasks.length) {
+                        document.getElementById('currentTaskName').textContent = state.tasks[state.currentTaskIndex].name;
+                    }
+                    
+                    updateDisplay();
+                    updateStats();
+                    renderTimerTasks();
+                    
+                    if (state.isActive && state.timeLeft > 0) {
+                        alert('⏰ Timer ripristinato!\n\nIl timer ha continuato mentre eri via.');
+                        const btn = document.getElementById('play');
+                        btn.textContent = '⏸';
+                        btn.classList.add('active');
+                        startTimerInterval();
+                    } else if (state.timeLeft === 0 && state.timerEndTime) {
+                        alert('🎉 Pomodoro completato mentre eri via!');
+                        loadNextTask();
+                    }
+                }
+            } catch (e) {
+                console.error('Errore caricamento:', e);
+            }
+        }
+
+        function addTask() {
+            const name = document.getElementById('taskName').value.trim();
+            const duration = parseInt(document.getElementById('pomDuration').value);
+            const count = parseFloat(document.getElementById('pomCount').value);
+
+            if (!name || !count || count <= 0) {
+                alert('Compila tutti i campi!');
+                return;
+            }
+
+            state.tasks.push({
+                name, duration, count,
+                completed: false,
+                notes: '',
+                completedPomodoros: 0,
+                isSmall: count < 1
+            });
+
+            document.getElementById('taskName').value = '';
+            document.getElementById('pomCount').value = '1';
+            
+            renderSetupTasks();
+            checkStartButton();
+        }
+
+        function renderSetupTasks() {
+            const list = document.getElementById('setupTasks');
+            list.innerHTML = '';
+
+            const smallTasks = state.tasks.filter(t => t.isSmall);
+            const normalTasks = state.tasks.filter(t => !t.isSmall);
+
+            if (smallTasks.length > 0) {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'pomodoro-group';
+                groupDiv.innerHTML = '<h4>🔸 Attività piccole (raggruppate)</h4>';
+                
+                smallTasks.forEach(task => {
+                    const div = document.createElement('div');
+                    div.className = 'small-task';
+                    div.innerHTML = `<strong>${task.name}</strong> <span style="color: #6b7280;">• ${task.duration}min • ${task.count}🍅</span>`;
+                    groupDiv.appendChild(div);
+                });
+                list.appendChild(groupDiv);
+            }
+
+            normalTasks.forEach(task => {
+                const div = document.createElement('div');
+                div.className = 'task-item';
+                div.innerHTML = `
+                    <div class="task-header">
+                        <span class="task-text">${task.name}</span>
+                        <div class="task-meta">
+                            <span class="task-duration">${task.duration}min</span>
+                            <span class="task-pomodoros">${task.count}🍅</span>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            const normalTotal = normalTasks.reduce((sum, t) => sum + t.count, 0);
+            const smallTotal = Math.ceil(smallTasks.reduce((sum, t) => sum + t.count, 0));
+            state.totalPomodoros = normalTotal + smallTotal;
+        }
+
+        function checkStartButton() {
+            const btn = document.getElementById('startBtn');
+            btn.disabled = !document.getElementById('sessionDate').value || 
+                          !document.getElementById('goal').value || 
+                          state.tasks.length === 0;
+        }
+
+        function startSession() {
+            state.sessionDate = document.getElementById('sessionDate').value;
+            state.goal = document.getElementById('goal').value;
+            
+            document.getElementById('setup').classList.add('hidden');
+            document.getElementById('timer').classList.remove('hidden');
+            
+            const d = new Date(state.sessionDate + 'T00:00:00');
+            document.getElementById('sessionDateDisplay').textContent = d.toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('currentGoal').textContent = '🎯 ' + state.goal;
+            
+            loadNextTask();
+            updateStats();
+            renderTimerTasks();
+            saveState();
+        }
+
+        function loadNextTask() {
+            if (state.currentTaskIndex >= state.tasks.length) {
+                alert('🎉 Tutte le attività completate!');
+                return;
+            }
+
+            const task = state.tasks[state.currentTaskIndex];
+            
+            if (state.currentPomodoroInTask >= task.count) {
+                state.tasks[state.currentTaskIndex].completed = true;
+                state.currentTaskIndex++;
+                state.currentPomodoroInTask = 0;
+                loadNextTask();
+                return;
+            }
+
+            state.timeLeft = task.duration * 60;
+            updateDisplay();
+            document.getElementById('currentTaskName').textContent = task.name;
+            renderTimerTasks();
+            saveState();
+        }
+
+        function toggleTimer() {
+            state.isActive = !state.isActive;
+            const btn = document.getElementById('play');
+            
+            if (state.isActive) {
+                btn.textContent = '⏸';
+                btn.classList.add('active');
+                state.timerEndTime = Date.now() + (state.timeLeft * 1000);
+                saveState();
+                startTimerInterval();
+            } else {
+                btn.textContent = '▶';
+                btn.classList.remove('active');
+                state.timerEndTime = null;
+                clearInterval(state.interval);
+                saveState();
+            }
+        }
+
+        function startTimerInterval() {
+            state.interval = setInterval(() => {
+                if (state.timeLeft > 0) {
+                    state.timeLeft--;
+                    updateDisplay();
+                } else {
+                    completePomo();
+                }
+            }, 1000);
+        }
+
+        function resetTimer() {
+            state.isActive = false;
+            state.timerEndTime = null;
+            clearInterval(state.interval);
+            const task = state.tasks[state.currentTaskIndex];
+            if (task) state.timeLeft = task.duration * 60;
+            document.getElementById('play').textContent = '▶';
+            document.getElementById('play').classList.remove('active');
+            updateDisplay();
+            saveState();
+        }
+
+        function completePomo() {
+            clearInterval(state.interval);
+            state.isActive = false;
+            state.timerEndTime = null;
+            
+            const task = state.tasks[state.currentTaskIndex];
+            task.completedPomodoros++;
+            state.currentPomodoroInTask++;
+            state.completedPomodoros++;
+            
+            document.getElementById('play').textContent = '▶';
+            document.getElementById('play').classList.remove('active');
+            
+            saveState();
+            alert('🎉 Pomodoro completato!\n\nPausa 5 minuti.');
+            
+            updateStats();
+            loadNextTask();
+        }
+
+        function skipTask() {
+            if (!confirm('Saltare questa attività?')) return;
+            
+            state.tasks[state.currentTaskIndex].completed = true;
+            state.currentTaskIndex++;
+            state.currentPomodoroInTask = 0;
+            
+            if (state.isActive) {
+                clearInterval(state.interval);
+                state.isActive = false;
+                state.timerEndTime = null;
+                document.getElementById('play').textContent = '▶';
+                document.getElementById('play').classList.remove('active');
+            }
+            
+            loadNextTask();
+            updateStats();
+            saveState();
+        }
+
+        function endSession() {
+            if (!confirm('Terminare la sessione? Lo stato verrà cancellato.')) return;
+            
+            clearInterval(state.interval);
+            localStorage.removeItem('pomodoroState');
+            location.reload();
+        }
+
+        function updateDisplay() {
+            const m = Math.floor(state.timeLeft / 60);
+            const s = state.timeLeft % 60;
+            document.getElementById('display').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }
+
+        function updateStats() {
+            document.getElementById('pomoDone').textContent = state.completedPomodoros;
+            document.getElementById('pomoTotal').textContent = state.totalPomodoros;
+            document.getElementById('tasksDone').textContent = state.tasks.filter(t => t.completed).length;
+            document.getElementById('progress').textContent = Math.round((state.completedPomodoros / state.totalPomodoros) * 100) + '%';
+        }
+
+        function renderTimerTasks() {
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+
+            state.tasks.forEach((task, i) => {
+                const div = document.createElement('div');
+                div.className = 'task-item';
+                if (task.completed) div.classList.add('completed');
+                if (i === state.currentTaskIndex) div.classList.add('active');
+
+                const header = document.createElement('div');
+                header.className = 'task-header';
+                header.innerHTML = `
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTaskCompletion(${i})">
+                    <span class="task-text">${task.name}</span>
+                    <div class="task-meta">
+                        <span class="task-duration">${task.duration}min</span>
+                        <span class="task-pomodoros">${task.completedPomodoros}/${task.count}🍅</span>
+                    </div>
+                `;
+                header.onclick = (e) => {
+                    if (!e.target.matches('input')) {
+                        document.getElementById('notes-'+i).classList.toggle('show');
+                    }
+                };
+
+                const notes = document.createElement('div');
+                notes.id = 'notes-'+i;
+                notes.className = 'task-notes';
+                notes.innerHTML = `<textarea placeholder="Note..." onchange="state.tasks[${i}].notes=this.value; saveState();">${task.notes}</textarea>`;
+
+                div.appendChild(header);
+                div.appendChild(notes);
+                list.appendChild(div);
+            });
+        }
+
+        function toggleTaskCompletion(i) {
+            state.tasks[i].completed = !state.tasks[i].completed;
+            renderTimerTasks();
+            updateStats();
+            saveState();
+        }
+
+        function showReport() {
+            const d = new Date(state.sessionDate + 'T00:00:00');
+            const dateStr = d.toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            const completed = state.tasks.filter(t => t.completed);
+            const pending = state.tasks.filter(t => !t.completed);
+            const totalMin = state.tasks.reduce((sum, t) => sum + (t.duration * t.completedPomodoros), 0);
+            const h = Math.floor(totalMin / 60);
+            const m = totalMin % 60;
+
+            let html = `
+                <div class="report-section">
+                    <h3>📅 ${dateStr}</h3>
+                    <p><strong>Obiettivo:</strong> ${state.goal}</p>
+                    <p><strong>Pomodori:</strong> ${state.completedPomodoros}/${state.totalPomodoros} (${Math.round((state.completedPomodoros/state.totalPomodoros)*100)}%)</p>
+                    <p><strong>Tempo:</strong> ${h}h ${m}min</p>
+                    <p><strong>Task:</strong> ${completed.length}/${state.tasks.length}</p>
+                </div>
+                <div class="report-section">
+                    <h3>✅ Completate</h3>
+            `;
+
+            if (completed.length > 0) {
+                completed.forEach(task => {
+                    html += `
+                        <div class="report-task completed">
+                            <div class="report-task-title">✓ ${task.name}</div>
+                            <div class="report-task-meta">🍅 ${task.completedPomodoros}/${task.count} • ⏱️ ${task.duration}min/Pom • 📊 ${task.completedPomodoros * task.duration}min totali</div>
+                            ${task.notes ? `<div class="report-task-notes">"${task.notes}"</div>` : ''}
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p>Nessuna</p>';
+            }
+
+            html += '</div><div class="report-section"><h3>⏳ In corso</h3>';
+
+            if (pending.length > 0) {
+                pending.forEach(task => {
+                    html += `
+                        <div class="report-task">
+                            <div class="report-task-title">○ ${task.name}</div>
+                            <div class="report-task-meta">🍅 ${task.completedPomodoros}/${task.count} • ⏱️ ${task.duration}min/Pom</div>
+                            ${task.notes ? `<div class="report-task-notes">"${task.notes}"</div>` : ''}
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p>Tutte completate! 🎉</p>';
+            }
+
+            html += '</div>';
+
+            document.getElementById('reportContent').innerHTML = html;
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeReport() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        function exportTXT() {
+            const d = new Date(state.sessionDate + 'T00:00:00');
+            const dateStr = d.toLocaleDateString('it-IT');
+            const totalMin = state.tasks.reduce((sum, t) => sum + (t.duration * t.completedPomodoros), 0);
+            
+            let txt = `🍅 REPORT POMODORO - ${dateStr}\n\n`;
+            txt += `Obiettivo: ${state.goal}\n`;
+            txt += `Pomodori: ${state.completedPomodoros}/${state.totalPomodoros}\n`;
+            txt += `Tempo: ${Math.floor(totalMin/60)}h ${totalMin%60}min\n\n`;
+            txt += `✅ COMPLETATE:\n\n`;
+            
+            state.tasks.filter(t => t.completed).forEach((task, i) => {
+                txt += `${i+1}. ${task.name}\n`;
+                txt += `   🍅 ${task.completedPomodoros}/${task.count} • ⏱️ ${task.duration}min\n`;
+                if (task.notes) txt += `   Note: ${task.notes}\n`;
+                txt += '\n';
+            });
+            
+            txt += `⏳ IN CORSO:\n\n`;
+            state.tasks.filter(t => !t.completed).forEach((task, i) => {
+                txt += `${i+1}. ${task.name}\n`;
+                txt += `   🍅 ${task.completedPomodoros}/${task.count} • ⏱️ ${task.duration}min\n`;
+                if (task.notes) txt += `   Note: ${task.notes}\n`;
+                txt += '\n';
+            });
+            
+            download(txt, `pomodoro-${dateStr}.txt`, 'text/plain');
+            closeReport();
+        }
+
+        function exportHTML() {
+            const d = new Date(state.sessionDate + 'T00:00:00');
+            const dateStr = d.toLocaleDateString('it-IT');
+            const totalMin = state.tasks.reduce((sum, t) => sum + (t.duration * t.completedPomodoros), 0);
+            
+            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Report ${dateStr}</title><style>body{font-family:Arial;max-width:800px;margin:40px auto;padding:20px}h1{color:#dc2626}.task{padding:12px;margin:10px 0;background:#f9fafb;border-radius:8px}.completed{background:#d1fae5}</style></head><body><h1>🍅 Report Pomodoro</h1><p><strong>Data:</strong> ${dateStr}</p><p><strong>Obiettivo:</strong> ${state.goal}</p><p><strong>Pomodori:</strong> ${state.completedPomodoros}/${state.totalPomodoros}</p><p><strong>Tempo:</strong> ${Math.floor(totalMin/60)}h ${totalMin%60}min</p><h2>✅ Completate</h2>`;
+            
+            state.tasks.filter(t => t.completed).forEach(task => {
+                html += `<div class="task completed"><strong>${task.name}</strong><br>🍅 ${task.completedPomodoros}/${task.count} • ⏱️ ${task.duration}min${task.notes ? '<br><em>'+task.notes+'</em>' : ''}</div>`;
+            });
+            
+            html += '<h2>⏳ In corso</h2>';
+            state.tasks.filter(t => !t.completed).forEach(task => {
+                html += `<div class="task"><strong>${task.name}</strong><br>🍅 ${task.completedPomodoros}/${task.count} • ⏱️ ${task.duration}min${task.notes ? '<br><em>'+task.notes+'</em>' : ''}</div>`;
+            });
+            
+            html += '</body></html>';
+            download(html, `pomodoro-${dateStr}.html`, 'text/html');
+            closeReport();
+        }
+
+        function download(content, filename, type) {
+            const blob = new Blob([content], { type: type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Event listeners
+        document.getElementById('goal').addEventListener('input', checkStartButton);
+        document.getElementById('sessionDate').addEventListener('change', checkStartButton);
+        document.getElementById('taskName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+    </script>
+</body>
+</html>
